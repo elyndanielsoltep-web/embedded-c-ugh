@@ -1,0 +1,1642 @@
+version: 2.1
+
+jobs:
+  prep_jul25-rev:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: loop till green
+          command: |
+            mkdir -p /tmp/share
+            set +o pipefail 2>/dev/null; ( echo "init-$(date +%s)"; seq 1 100000 ) | md5sum > /tmp/share/.lock; true
+            du -h /tmp/share/.lock
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - .lock
+  jul25-rev:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  sys_ship-it:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: dead calm
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; ls /proc 2>/dev/null | grep -c '^[0-9]' 2>/dev/null; true ; } > /tmp/share/2023-07-10.data
+            du -h /tmp/share/2023-07-10.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 2023-07-10.data
+  ship-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  reset_vb-new:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: beat drop
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 10 90 | awk '$1~/[13]$/' | wc -l; true ; } > /tmp/share/764.txt
+            du -h /tmp/share/764.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 764.txt
+  vb-new:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/764.txt && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  bundle_assemble-nightly-release-candidate:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: maltese
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a=1; for(i=0;i<10;i++){a*=2}; print a}'; true ; } > /tmp/share/metrics.tsv
+            du -h /tmp/share/metrics.tsv
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - metrics.tsv
+  assemble-nightly-release-candidate:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/pt-B.state && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  B_node18-cov:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: whipping end
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "key: value" | sed 's/^.*: //'; true ; } > /tmp/share/result.out
+            du -h /tmp/share/result.out
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - result.out
+  node18-cov:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/pt-B.state && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  reup_WEB-307:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: coil down
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 20 | tr '\n' ' ' | md5sum; true ; } > /tmp/share/706b.data
+            du -h /tmp/share/706b.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 706b.data
+  WEB-307:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  tmp_biuld:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: soak cycle
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; yes a | head -2000 | md5sum | awk '{print $1}'; true ; } > /tmp/share/bundle
+            du -h /tmp/share/bundle
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - bundle
+  biuld:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/bundle && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  cook_foxtrot:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: legato
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 100 | tr '\n' ','  | sed 's/,$/\n/' | head -c 60; true ; } > /tmp/share/buffer.blob
+            du -h /tmp/share/buffer.blob
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - buffer.blob
+  foxtrot:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/buffer.blob && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  tmp_v2-alpha1:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: hill
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{n=1024; while(n>1){n/=2;c++}; print c}'; true ; } > /tmp/share/DONE
+            du -h /tmp/share/DONE
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - DONE
+  v2-alpha1:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/stage.bin && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  linter_fire-up:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: TESTS
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; head -c 4194304 /dev/urandom | sha256sum; true ; } > /tmp/share/phase-complete.log
+            du -h /tmp/share/phase-complete.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - phase-complete.log
+  fire-up:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/phase-complete.log && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  preflight_canary-v9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: side quest
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "data" | b2sum 2>/dev/null | head -c 20 || echo "data" | md5sum | head -c 20; true ; } > /tmp/share/secondary_job_output.log
+            du -h /tmp/share/secondary_job_output.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - secondary_job_output.log
+  canary-v9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/secondary_job_output.log && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  teardown_green-light:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: whoosh
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%d" $$ | md5sum; true ; } > /tmp/share/gate-pass.sig
+            du -h /tmp/share/gate-pass.sig
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - gate-pass.sig
+  green-light:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/gate-pass.sig && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  step2_py311-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: monsoon
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; cat /dev/urandom | head -c 3072000 | base64 | head -c 200 | wc -c; true ; } > /tmp/share/cache.dat
+            du -h /tmp/share/cache.dat
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - cache.dat
+  py311-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/pt-B.state && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  stage_tb-2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: ravenous
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; cat /proc/sys/kernel/random/uuid 2>/dev/null; true ; } > /tmp/share/stage-ok.txt
+            du -h /tmp/share/stage-ok.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stage-ok.txt
+  tb-2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/stage-ok.txt && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  produce_build-staging-artifact-bundle:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: traction
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; uname -mnrs; true ; } > /tmp/share/2023-10-20.data
+            du -h /tmp/share/2023-10-20.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 2023-10-20.data
+  build-staging-artifact-bundle:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/phase-complete.log && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  ctx_rip-it:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: nothing to see
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; tty 2>/dev/null || echo no-tty; true ; } > /tmp/share/stage.dat
+            du -h /tmp/share/stage.dat
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stage.dat
+  rip-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  warmup_validte:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: knock twice
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="hello"; print index(s,"ll")}'; true ; } > /tmp/share/stage.bin
+            du -h /tmp/share/stage.bin
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stage.bin
+  validte:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/stage.bin && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  staging_VerifyProd:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: turn right
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="abcde"; for(i=length(s);i>=1;i--)printf "%s",substr(s,i,1); print ""}'; true ; } > /tmp/share/FINAL.txt
+            du -h /tmp/share/FINAL.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - FINAL.txt
+  VerifyProd:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/FINAL.txt && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  db_quebec:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: chaos monkey
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%s\n" {aa..zz} 2>/dev/null | head -5 || printf "%s\n" a1 a2 b1 b2; true ; } > /tmp/share/280.txt
+            du -h /tmp/share/280.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 280.txt
+  quebec:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/280.txt && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  tap_vb-2a:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: mountain climber
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; cat /proc/stat 2>/dev/null | head -1; true ; } > /tmp/share/.state
+            du -h /tmp/share/.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - .state
+  vb-2a:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/pt-B.state && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  rerun_v4-rc:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: chef kiss
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 50000 | awk '$1%997==0' | wc -l; true ; } > /tmp/share/audit.txt
+            du -h /tmp/share/audit.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - audit.txt
+  v4-rc:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  rerun_java17-bench:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: rinse off
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; cat /etc/hostname | rev; true ; } > /tmp/share/step-24.log
+            du -h /tmp/share/step-24.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - step-24.log
+  java17-bench:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  auditor_nova-ng:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: offset smoker
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=10;i++){s+=1/i} printf "%.4f\n",s}'; true ; } > /tmp/share/14.data
+            du -h /tmp/share/14.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 14.data
+  nova-ng:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/14.data && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  reserve_lets-go:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: sniff
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; tr -c 'a-z\n' 'X' < /etc/hostname | head -c 50; true ; } > /tmp/share/pt-A.pt
+            du -h /tmp/share/pt-A.pt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - pt-A.pt
+  lets-go:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/stage.bin && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  linter_chen-build:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: candle flicker
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk -v n=100 'BEGIN{for(i=1;i<=n;i++)print i}' | tail -3; true ; } > /tmp/share/pt-B.state
+            du -h /tmp/share/pt-B.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - pt-B.state
+  chen-build:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/pt-B.state && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  gamma_zulu-9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: shrug
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 414249 | awk '{if($1%97==0)c++}END{print c}'; true ; } > /tmp/share/44.blob
+            du -h /tmp/share/44.blob
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 44.blob
+  zulu-9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/pt-B.state && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  hydrate_rollout:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: side flip
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 20000 | awk 'BEGIN{s=1}{s=(s*7+$1)%2147483647}END{print s}'; true ; } > /tmp/share/secondary_job_output.txt
+            du -h /tmp/share/secondary_job_output.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - secondary_job_output.txt
+  rollout:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/stage.bin && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  generate_VERIFY_PROD:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: pretty please
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "layered" | base64 | base64 | base64 | wc -c; true ; } > /tmp/share/final.out
+            du -h /tmp/share/final.out
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - final.out
+  VERIFY_PROD:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/final.out && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  D_run-quick-artifact-bundle:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: nordic hamstring
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; head -c 1 /dev/urandom | od -An -tu1 | head -1; true ; } > /tmp/share/main_step_output.txt
+            du -h /tmp/share/main_step_output.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - main_step_output.txt
+  run-quick-artifact-bundle:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/phase-complete.log && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+  wire_rust-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: quiet now
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'NR<=3' /etc/passwd | md5sum; true ; } > /tmp/share/2024-08-21.data
+            du -h /tmp/share/2024-08-21.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 2024-08-21.data
+  rust-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pick up handoff
+          command: |
+            test -f /tmp/share/phase-complete.log && echo found || echo missing
+      - run:
+          name: Fetch repository
+          command: git clone --depth 3 --quiet --no-single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack dependencies
+          command: tar --extract --bzip2 --file=release-pkg.tar.bz2
+      - run:
+          name: Validate binary
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Verify output
+          command: uname -a
+      - run:
+          no_output_timeout: 110m
+          command: "./controller"
+
+  reset_VerifyProd_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: flemish coil
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 1000 | awk 'NR%3==0' | wc -l; true ; } > /tmp/share/FINAL.txt
+            du -h /tmp/share/FINAL.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - FINAL.txt
+  step1_VERIFY_PROD_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: hanger up
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%s\n" quick brown fox lazy dog | awk '{print length($0), $0}' | sort -n; true ; } > /tmp/share/final.out
+            du -h /tmp/share/final.out
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - final.out
+  orchestrate_foxtrot_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: jump squat
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "key: value" | sed 's/^.*: //'; true ; } > /tmp/share/buffer.blob
+            du -h /tmp/share/buffer.blob
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - buffer.blob
+  enqueue_tb-2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: samba glide
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; sed -n '/^$/d; p' <<<$'line1\n\nline2\n\nline3' | wc -l; true ; } > /tmp/share/stage-ok.txt
+            du -h /tmp/share/stage-ok.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stage-ok.txt
+  fetch_vb-new_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: upbeat
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; uname -mnrs; true ; } > /tmp/share/764.txt
+            du -h /tmp/share/764.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 764.txt
+  produce_green-light_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: splice line
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%x\n" $$; true ; } > /tmp/share/gate-pass.sig
+            du -h /tmp/share/gate-pass.sig
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - gate-pass.sig
+  red_quebec_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: take five
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; dd if=/dev/zero bs=1 count=50 2>/dev/null | tr '\0' 'z' | wc -c; true ; } > /tmp/share/280.txt
+            du -h /tmp/share/280.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 280.txt
+  canary1_canary-v9_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: bench press
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo $(($(date +%s) + RANDOM)) | md5sum; true ; } > /tmp/share/secondary_job_output.log
+            du -h /tmp/share/secondary_job_output.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - secondary_job_output.log
+  alpha_biuld_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: heave line
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; date -d "next Friday" +%A 2>/dev/null || date +%A; true ; } > /tmp/share/bundle
+            du -h /tmp/share/bundle
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - bundle
+workflows:
+  build-and-test:
+    jobs:
+      - staging_VerifyProd
+      - reset_VerifyProd_2:
+          requires:
+            - staging_VerifyProd
+      - VerifyProd:
+          requires:
+            - reset_VerifyProd_2
+      - generate_VERIFY_PROD:
+          requires:
+            - reset_VerifyProd_2
+      - step1_VERIFY_PROD_2:
+          requires:
+            - generate_VERIFY_PROD
+      - VERIFY_PROD:
+          requires:
+            - step1_VERIFY_PROD_2
+      - linter_chen-build
+      - tap_vb-2a
+      - B_node18-cov
+      - chen-build:
+          requires:
+            - linter_chen-build
+            - tap_vb-2a
+            - B_node18-cov
+      - vb-2a:
+          requires:
+            - linter_chen-build
+            - tap_vb-2a
+            - B_node18-cov
+      - node18-cov:
+          requires:
+            - linter_chen-build
+            - tap_vb-2a
+            - B_node18-cov
+      - zulu-9:
+          requires:
+            - linter_chen-build
+            - tap_vb-2a
+            - B_node18-cov
+      - py311-ship:
+          requires:
+            - linter_chen-build
+            - tap_vb-2a
+            - B_node18-cov
+      - assemble-nightly-release-candidate:
+          requires:
+            - linter_chen-build
+            - tap_vb-2a
+            - B_node18-cov
+      - auditor_nova-ng
+      - rerun_java17-bench
+      - nova-ng:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - java17-bench:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - ship-it:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - jul25-rev:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - rip-it:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - v4-rc:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - WEB-307:
+          requires:
+            - auditor_nova-ng
+            - rerun_java17-bench
+      - linter_fire-up
+      - wire_rust-ship
+      - fire-up:
+          requires:
+            - linter_fire-up
+            - wire_rust-ship
+      - rust-ship:
+          requires:
+            - linter_fire-up
+            - wire_rust-ship
+      - run-quick-artifact-bundle:
+          requires:
+            - linter_fire-up
+            - wire_rust-ship
+      - build-staging-artifact-bundle:
+          requires:
+            - linter_fire-up
+            - wire_rust-ship
+      - warmup_validte
+      - tmp_v2-alpha1
+      - validte:
+          requires:
+            - warmup_validte
+            - tmp_v2-alpha1
+      - v2-alpha1:
+          requires:
+            - warmup_validte
+            - tmp_v2-alpha1
+      - lets-go:
+          requires:
+            - warmup_validte
+            - tmp_v2-alpha1
+      - rollout:
+          requires:
+            - warmup_validte
+            - tmp_v2-alpha1
+      - cook_foxtrot
+      - orchestrate_foxtrot_2:
+          requires:
+            - cook_foxtrot
+      - foxtrot:
+          requires:
+            - orchestrate_foxtrot_2
+      - stage_tb-2:
+          requires:
+            - orchestrate_foxtrot_2
+      - enqueue_tb-2_2:
+          requires:
+            - stage_tb-2
+      - tb-2:
+          requires:
+            - enqueue_tb-2_2
+      - reset_vb-new:
+          requires:
+            - enqueue_tb-2_2
+      - fetch_vb-new_2:
+          requires:
+            - reset_vb-new
+      - vb-new:
+          requires:
+            - fetch_vb-new_2
+      - teardown_green-light:
+          requires:
+            - fetch_vb-new_2
+      - produce_green-light_2:
+          requires:
+            - teardown_green-light
+      - green-light:
+          requires:
+            - produce_green-light_2
+      - db_quebec:
+          requires:
+            - produce_green-light_2
+      - red_quebec_2:
+          requires:
+            - db_quebec
+      - quebec:
+          requires:
+            - red_quebec_2
+      - preflight_canary-v9:
+          requires:
+            - red_quebec_2
+      - canary1_canary-v9_2:
+          requires:
+            - preflight_canary-v9
+      - canary-v9:
+          requires:
+            - canary1_canary-v9_2
+      - tmp_biuld:
+          requires:
+            - canary1_canary-v9_2
+      - alpha_biuld_2:
+          requires:
+            - tmp_biuld
+      - biuld:
+          requires:
+            - alpha_biuld_2
